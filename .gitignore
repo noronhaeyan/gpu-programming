@@ -1,0 +1,10 @@
+# compiled binaries
+startup/hello
+startup/specs
+*.o
+*.out
+
+# profiler output
+*.nsys-rep
+*.sqlite
+*.ncu-rep
