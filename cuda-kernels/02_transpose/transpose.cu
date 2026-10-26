@@ -35,14 +35,14 @@ void transpose_cpu(int rows, int cols, const std::vector<float>& x, std::vector<
 // ---- Driver ----------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  const int rows = (argc > 1) ? std::atoi(argv[1]) : (1 << 26);
+  const int rows = (argc > 1) ? std::atoi(argv[1]) : (1 << 14);
   const int cols = (argc > 2) ? std::atoi(argv[2]) : rows;
 
   DeviceInfo dev = get_device_info();
   print_device_info(dev);
   std::printf("\nrow length = %d\n", rows);
   std::printf("column length = %d\n", cols);
-  std::printf("Total memory =  #.1f MiB \n" , rows * cols * sizeof(float) / 1048576.0);
+  std::printf("Total memory =  %.1f MiB \n" , rows * cols * sizeof(float) / 1048576.0);
 
   // 1-2. Inputs and reference.
   std::vector<float> h_x = random_vector(rows*cols, 1), h_ref(rows*cols);
@@ -51,8 +51,8 @@ int main(int argc, char** argv) {
   DeviceBuffer<float> d_x(rows*cols), d_z(rows*cols);
   d_x.copy_from_host(h_x);
 
-  const int block = 256;
-  const int grid = (n + block - 1) / block;
+  dim3 block(16, 16);
+  dim3 grid( (rows + block.x - 1)/block.x , (cols + block.y - 1)/block.y); 
   auto launch_v1 = [&] { transpose_v1<<<grid, block>>>(rows, cols, d_x.data(), d_z.data()); };
 
   // 3-4. Correctness first: a fast wrong kernel is worthless.
@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
   // a*x+y may compile to a fused multiply-add on the GPU, so allow ~1 ulp.
   if (!check_close(h_ref, d_z.to_host(), 1e-6, 1e-6)) return EXIT_FAILURE;
 
-  // 5. Benchmark. Traffic: read x, read y, write z = 3 floats per element.
-  const double bytes = 3.0 * n * sizeof(float);
-  const double flops = 2.0 * n;  // one multiply + one add per element
+  // 5. Benchmark. Traffic: read x, write z = 2 floats per element.
+  const double bytes = 2.0 * rows * cols * sizeof(float);
+  const double flops = 0.0 ;  // no arithmetic needed for transpose
   std::printf("\n");
   report("transpose_v1", benchmark(launch_v1), bytes, flops, dev);
 

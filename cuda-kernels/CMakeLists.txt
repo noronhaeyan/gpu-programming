@@ -38,5 +38,6 @@ endfunction()
 
 add_cuda_executable(specs tools/specs.cu)
 add_cuda_executable(vector_add 01_vector_add/vector_add.cu)
+add_cuda_executable(transpose 02_transpose/transpose.cu)
 # Add each new project here, e.g.:
 # add_cuda_executable(transpose 02_transpose/transpose.cu)
