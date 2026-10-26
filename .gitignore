@@ -8,3 +8,6 @@ startup/specs
 *.nsys-rep
 *.sqlite
 *.ncu-rep
+
+#misc files
+*.tar.gz

@@ -1,0 +1,6 @@
+build/
+*.ncu-rep
+*.nsys-rep
+*.sqlite
+*.qdstrm
+.vscode/
